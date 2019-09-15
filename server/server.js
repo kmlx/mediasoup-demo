@@ -29,6 +29,8 @@ const Room = require('./lib/Room');
 const interactiveServer = require('./lib/interactiveServer');
 const interactiveClient = require('./lib/interactiveClient');
 
+const serveStatic = require('serve-static');
+
 const logger = new Logger();
 
 // Async queue to manage rooms.
@@ -133,6 +135,8 @@ async function createExpressApp()
 	expressApp = express();
 
 	expressApp.use(bodyParser.json());
+	
+	expressApp.use(serveStatic('public/', { 'index': ['index.html'] }));
 
 	/**
 	 * For every API request, verify that the roomId in the path matches and
