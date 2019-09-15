@@ -821,6 +821,27 @@ class Room extends EventEmitter
 
 			case 'createWebRtcTransport':
 			{
+				
+				const plainRtpTransportOptions =
+					{
+						...config.mediasoup.plainRtpTransportOptions,
+						rtcpMux     : true,
+						comedia     : true,
+						multiSource : false
+					};
+				
+				const transport2 = await this._mediasoupRouter.createPlainRtpTransport(
+					plainRtpTransportOptions);
+				
+				// Store it.
+				// peer.data.transports.set(transport2.id, transport2);
+				
+				console.log( {
+					id       : transport2.id,
+					ip       : transport2.tuple.localIp,
+					port     : transport2.tuple.localPort,
+					rtcpPort : transport2.rtcpTuple ? transport2.rtcpTuple.localPort : undefined
+				});
 				// NOTE: Don't require that the Peer is joined here, so the client can
 				// initiate mediasoup Transports and be ready when he later joins.
 
