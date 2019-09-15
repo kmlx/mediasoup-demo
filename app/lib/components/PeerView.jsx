@@ -5,18 +5,18 @@ import classnames from 'classnames';
 import Spinner from 'react-spinner';
 import clipboardCopy from 'clipboard-copy';
 import hark from 'hark';
-import * as faceapi from 'face-api.js';
+// import * as faceapi from 'face-api.js';
 import Logger from '../Logger';
 import * as appPropTypes from './appPropTypes';
 import EditableInput from './EditableInput';
 
 const logger = new Logger('PeerView');
 
-const tinyFaceDetectorOptions = new faceapi.TinyFaceDetectorOptions(
-	{
-		inputSize      : 160,
-		scoreThreshold : 0.5
-	});
+// const tinyFaceDetectorOptions = new faceapi.TinyFaceDetectorOptions(
+// 	{
+// 		inputSize      : 160,
+// 		scoreThreshold : 0.5
+// 	});
 
 export default class PeerView extends React.Component
 {
@@ -402,14 +402,15 @@ export default class PeerView extends React.Component
 					ref='videoElem'
 					className={classnames({
 						'is-me'         : isMe,
-						hidden          : !videoVisible || !videoCanPlay,
+						// hidden          : !videoVisible || !videoCanPlay,
 						'network-error' : (
 							videoVisible && videoMultiLayer && consumerCurrentSpatialLayer === null
 						)
 					})}
 					autoPlay
 					muted
-					controls={false}
+					playsInline
+					controls={!isMe}
 				/>
 
 				<audio
@@ -419,10 +420,10 @@ export default class PeerView extends React.Component
 					controls={false}
 				/>
 
-				<canvas
-					ref='canvas'
-					className={classnames('face-detection', { 'is-me': isMe })}
-				/>
+				{/*<canvas*/}
+				{/*	ref='canvas'*/}
+				{/*	className={classnames('face-detection', { 'is-me': isMe })}*/}
+				{/*/>*/}
 
 				<div className='volume-container'>
 					<div className={classnames('bar', `level${audioVolume}`)} />
@@ -454,7 +455,7 @@ export default class PeerView extends React.Component
 			this._hark.stop();
 
 		clearInterval(this._videoResolutionPeriodicTimer);
-		cancelAnimationFrame(this._faceDetectionRequestAnimationFrame);
+		// cancelAnimationFrame(this._faceDetectionRequestAnimationFrame);
 
 		const { videoElem } = this.refs;
 
@@ -494,7 +495,7 @@ export default class PeerView extends React.Component
 
 	_setTracks(audioTrack, videoTrack)
 	{
-		const { faceDetection } = this.props;
+		// const { faceDetection } = this.props;
 
 		if (this._audioTrack === audioTrack && this._videoTrack === videoTrack)
 			return;
@@ -507,8 +508,8 @@ export default class PeerView extends React.Component
 
 		this._stopVideoResolution();
 
-		if (faceDetection)
-			this._stopFaceDetection();
+		// if (faceDetection)
+		// 	this._stopFaceDetection();
 
 		const { audioElem, videoElem } = this.refs;
 
@@ -547,14 +548,17 @@ export default class PeerView extends React.Component
 			};
 
 			videoElem.onpause = () => this.setState({ videoElemPaused: true });
-
-			videoElem.play()
-				.catch((error) => logger.warn('videoElem.play() failed:%o', error));
+			
+			videoElem.addEventListener('error', (e) => {
+				console.log(e);
+			}, true);
+			// videoElem.play()
+			// 	.catch((error) => logger.warn('videoElem.play() failed:%o', error));
 
 			this._startVideoResolution();
 
-			if (faceDetection)
-				this._startFaceDetection();
+			// if (faceDetection)
+			// 	this._startFaceDetection();
 		}
 		else
 		{
@@ -619,60 +623,60 @@ export default class PeerView extends React.Component
 			});
 	}
 
-	_startFaceDetection()
-	{
-		const { videoElem, canvas } = this.refs;
-
-		const step = async () =>
-		{
-			// NOTE: Somehow this is critical. Otherwise the Promise returned by
-			// faceapi.detectSingleFace() never resolves or rejects.
-			if (!this._videoTrack || videoElem.readyState < 2)
-			{
-				this._faceDetectionRequestAnimationFrame = requestAnimationFrame(step);
-
-				return;
-			}
-
-			const detection =
-				await faceapi.detectSingleFace(videoElem, tinyFaceDetectorOptions);
-
-			if (detection)
-			{
-				const width = videoElem.offsetWidth;
-				const height = videoElem.offsetHeight;
-
-				canvas.width = width;
-				canvas.height = height;
-
-				// const resizedDetection = detection.forSize(width, height);
-				const resizedDetections =
-					faceapi.resizeResults(detection, { width, height });
-
-				faceapi.draw.drawDetections(canvas, resizedDetections);
-			}
-			else
-			{
-				// Trick to hide the canvas rectangle.
-				canvas.width = 0;
-				canvas.height = 0;
-			}
-
-			this._faceDetectionRequestAnimationFrame =
-				requestAnimationFrame(() => setTimeout(step, 100));
-		};
-
-		step();
-	}
+	// _startFaceDetection()
+	// {
+	// 	const { videoElem } = this.refs;
+	//
+	// 	const step = async () =>
+	// 	{
+	// 		// NOTE: Somehow this is critical. Otherwise the Promise returned by
+	// 		// faceapi.detectSingleFace() never resolves or rejects.
+	// 		if (!this._videoTrack || videoElem.readyState < 2)
+	// 		{
+	// 			this._faceDetectionRequestAnimationFrame = requestAnimationFrame(step);
+	//
+	// 			return;
+	// 		}
+	//
+	// 		// const detection =
+	// 		// 	await faceapi.detectSingleFace(videoElem, tinyFaceDetectorOptions);
+	// 		//
+	// 		// if (detection)
+	// 		// {
+	// 		// 	const width = videoElem.offsetWidth;
+	// 		// 	const height = videoElem.offsetHeight;
+	// 		//
+	// 		// 	canvas.width = width;
+	// 		// 	canvas.height = height;
+	// 		//
+	// 		// 	// const resizedDetection = detection.forSize(width, height);
+	// 		// 	const resizedDetections =
+	// 		// 		faceapi.resizeResults(detection, { width, height });
+	// 		//
+	// 		// 	faceapi.draw.drawDetections(canvas, resizedDetections);
+	// 		// }
+	// 		// else
+	// 		// {
+	// 		// 	// Trick to hide the canvas rectangle.
+	// 		// 	canvas.width = 0;
+	// 		// 	canvas.height = 0;
+	// 		// }
+	//
+	// 		this._faceDetectionRequestAnimationFrame =
+	// 			requestAnimationFrame(() => setTimeout(step, 100));
+	// 	};
+	//
+	// 	step();
+	// }
 
 	_stopFaceDetection()
 	{
-		cancelAnimationFrame(this._faceDetectionRequestAnimationFrame);
+		// cancelAnimationFrame(this._faceDetectionRequestAnimationFrame);
 
-		const { canvas } = this.refs;
+		// const { canvas } = this.refs;
 
-		canvas.width = 0;
-		canvas.height = 0;
+		// canvas.width = 0;
+		// canvas.height = 0;
 	}
 
 	_printProducerScore(id, score)

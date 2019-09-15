@@ -121,10 +121,11 @@ export default class RoomClient
 			this._externalVideo.muted = true;
 			this._externalVideo.loop = true;
 			this._externalVideo.setAttribute('playsinline', '');
+			this._externalVideo.setAttribute('autoplay', '');
 			this._externalVideo.src = EXTERNAL_VIDEO_SRC;
 
-			this._externalVideo.play()
-				.catch((error) => logger.warn('externalVideo.play() failed:%o', error));
+			// this._externalVideo.play()
+			// 	.catch((error) => logger.warn('externalVideo.play() failed:%o', error));
 		}
 
 		// Custom mediasoup-client handler (to override default browser detection if
@@ -1168,6 +1169,7 @@ export default class RoomClient
 					video :
 					{
 						deviceId : { exact: this._webcam.device.deviceId },
+						frameRate: '60',
 						...VIDEO_CONSTRAINS[this._webcam.resolution]
 					}
 				});

@@ -5,6 +5,7 @@ import * as appPropTypes from './appPropTypes';
 import { withRoomContext } from '../RoomContext';
 import * as stateActions from '../redux/stateActions';
 import PeerView from './PeerView';
+import UrlParse from 'url-parse';
 
 const Peer = (props) =>
 {
@@ -29,6 +30,10 @@ const Peer = (props) =>
 		!videoConsumer.locallyPaused &&
 		!videoConsumer.remotelyPaused
 	);
+	
+	const urlParser = new UrlParse(window.location.href, true);
+	const produce = urlParser.query.produce !== 'false';
+	const consume = urlParser.query.consume !== 'false';
 
 	return (
 		<div data-component='Peer'>
@@ -41,15 +46,16 @@ const Peer = (props) =>
 					<div className='icon webcam-off' />
 				</If>
 			</div>
-
+			
+			{ consume && !produce &&
 			<PeerView
-				peer={peer}
-				audioConsumerId={audioConsumer ? audioConsumer.id : null}
-				videoConsumerId={videoConsumer ? videoConsumer.id : null}
-				audioRtpParameters={audioConsumer ? audioConsumer.rtpParameters : null}
-				videoRtpParameters={videoConsumer ? videoConsumer.rtpParameters : null}
-				consumerSpatialLayers={videoConsumer ? videoConsumer.spatialLayers : null}
-				consumerTemporalLayers={videoConsumer ? videoConsumer.temporalLayers : null}
+				peer={ peer }
+				audioConsumerId={ audioConsumer ? audioConsumer.id : null }
+				videoConsumerId={ videoConsumer ? videoConsumer.id : null }
+				audioRtpParameters={ audioConsumer ? audioConsumer.rtpParameters : null }
+				videoRtpParameters={ videoConsumer ? videoConsumer.rtpParameters : null }
+				consumerSpatialLayers={ videoConsumer ? videoConsumer.spatialLayers : null }
+				consumerTemporalLayers={ videoConsumer ? videoConsumer.temporalLayers : null }
 				consumerCurrentSpatialLayer={
 					videoConsumer ? videoConsumer.currentSpatialLayer : null
 				}
@@ -62,27 +68,26 @@ const Peer = (props) =>
 				consumerPreferredTemporalLayer={
 					videoConsumer ? videoConsumer.preferredTemporalLayer : null
 				}
-				audioTrack={audioConsumer ? audioConsumer.track : null}
-				videoTrack={videoConsumer ? videoConsumer.track : null}
-				audioMuted={audioMuted}
-				videoVisible={videoVisible}
-				videoMultiLayer={videoConsumer && videoConsumer.type !== 'simple'}
-				audioCodec={audioConsumer ? audioConsumer.codec : null}
-				videoCodec={videoConsumer ? videoConsumer.codec : null}
-				audioScore={audioConsumer ? audioConsumer.score : null}
-				videoScore={videoConsumer ? videoConsumer.score : null}
-				faceDetection={faceDetection}
-				onChangeVideoPreferredLayers={(spatialLayer, temporalLayer) =>
-				{
+				audioTrack={ audioConsumer ? audioConsumer.track : null }
+				videoTrack={ videoConsumer ? videoConsumer.track : null }
+				audioMuted={ audioMuted }
+				videoVisible={ videoVisible }
+				videoMultiLayer={ videoConsumer && videoConsumer.type !== 'simple' }
+				audioCodec={ audioConsumer ? audioConsumer.codec : null }
+				videoCodec={ videoConsumer ? videoConsumer.codec : null }
+				audioScore={ audioConsumer ? audioConsumer.score : null }
+				videoScore={ videoConsumer ? videoConsumer.score : null }
+				faceDetection={ faceDetection }
+				onChangeVideoPreferredLayers={ (spatialLayer, temporalLayer) => {
 					roomClient.setConsumerPreferredLayers(
 						videoConsumer.id, spatialLayer, temporalLayer);
-				}}
-				onRequestKeyFrame={() =>
-				{
+				} }
+				onRequestKeyFrame={ () => {
 					roomClient.requestConsumerKeyFrame(videoConsumer.id);
-				}}
-				onStatsClick={onSetStatsPeerId}
+				} }
+				onStatsClick={ onSetStatsPeerId }
 			/>
+			}
 		</div>
 	);
 };

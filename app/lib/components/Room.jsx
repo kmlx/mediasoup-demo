@@ -14,9 +14,18 @@ import Peers from './Peers';
 import Stats from './Stats';
 import Notifications from './Notifications';
 import NetworkThrottle from './NetworkThrottle';
+import UrlParse from 'url-parse';
 
 class Room extends React.Component
 {
+	constructor(props) {
+		super(props);
+		
+		const urlParser = new UrlParse(window.location.href, true);
+		this.produce = urlParser.query.produce !== 'false';
+		this.consume = urlParser.query.consume !== 'false';
+	}
+	
 	render()
 	{
 		const {
@@ -69,18 +78,21 @@ class Room extends React.Component
 					</div>
 
 					<Peers />
-
-					<div
+					
+					{ this.produce && !this.consume &&<div
 						className={classnames('me-container', {
-							'active-speaker' : amActiveSpeaker
+							'active-speaker' : amActiveSpeaker,
+							'producer': this.produce
 						})}
 					>
-						<Me />
-					</div>
+						
+							<Me/>
+						
+					</div>}
 
-					<div className='chat-input-container'>
-						<ChatInput />
-					</div>
+					{/*<div className='chat-input-container'>*/}
+					{/*	<ChatInput />*/}
+					{/*</div>*/}
 
 					<div className='sidebar'>
 						<div
